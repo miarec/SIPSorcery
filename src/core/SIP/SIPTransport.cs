@@ -1316,37 +1316,37 @@ namespace SIPSorcery.SIP
         {
             SIPRequestInTraceEvent += (localEP, remoteEP, req) =>
             {
-                logger.LogDebug($"Request received: {localEP}<-{remoteEP} {req.StatusLine}");
+                logger.LogInformation($"Request received: {localEP}<-{remoteEP} {req.StatusLine}");
                 logger.LogTrace(req.ToString());
             };
 
             SIPRequestOutTraceEvent += (localEP, remoteEP, req) =>
             {
-                logger.LogDebug($"Request sent: {localEP}->{remoteEP} {req.StatusLine}");
+                logger.LogInformation($"Request sent: {localEP}->{remoteEP} {req.StatusLine}");
                 logger.LogTrace(req.ToString());
             };
 
             SIPResponseInTraceEvent += (localEP, remoteEP, resp) =>
             {
-                logger.LogDebug($"Response received: {localEP}<-{remoteEP} {resp.ShortDescription}");
+                logger.LogInformation($"Response received: {localEP}<-{remoteEP} {resp.ShortDescription}");
                 logger.LogTrace(resp.ToString());
             };
 
             SIPResponseOutTraceEvent += (localEP, remoteEP, resp) =>
             {
-                logger.LogDebug($"Response sent: {localEP}->{remoteEP} {resp.ShortDescription}");
+                logger.LogInformation($"Response sent: {localEP}->{remoteEP} {resp.ShortDescription}");
                 logger.LogTrace(resp.ToString());
             };
 
             SIPRequestRetransmitTraceEvent += (tx, req, count) =>
             {
-                logger.LogDebug($"Request retransmit {count} for request {req.StatusLine}, initial transmit {DateTime.Now.Subtract(tx.InitialTransmit).TotalSeconds.ToString("0.###")}s ago.");
+                logger.LogInformation($"Request retransmit {count} for request {req.StatusLine}, initial transmit {DateTime.Now.Subtract(tx.InitialTransmit).TotalSeconds.ToString("0.###")}s ago.");
                 logger.LogTrace(req.ToString());
             };
 
             SIPResponseRetransmitTraceEvent += (tx, resp, count) =>
             {
-                logger.LogDebug($"Response retransmit {count} for response {resp.ShortDescription}, initial transmit {DateTime.Now.Subtract(tx.InitialTransmit).TotalSeconds.ToString("0.###")}s ago.");
+                logger.LogInformation($"Response retransmit {count} for response {resp.ShortDescription}, initial transmit {DateTime.Now.Subtract(tx.InitialTransmit).TotalSeconds.ToString("0.###")}s ago.");
                 logger.LogTrace(resp.ToString());
             };
         }
