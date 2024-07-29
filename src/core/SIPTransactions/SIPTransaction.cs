@@ -1,4 +1,4 @@
-//-----------------------------------------------------------------------------
+﻿//-----------------------------------------------------------------------------
 // Filename: SIPTransaction.cs
 //
 // Description: SIP Transaction.
@@ -103,6 +103,23 @@ namespace SIPSorcery.SIP
         public DateTime InitialTransmit = DateTime.MinValue;
         public DateTime LastTransmit = DateTime.MinValue;
         public bool DeliveryPending = true;
+
+        /// <summary>
+        /// Timings for this SIP request.
+        /// Added by MiaRec
+        /// </summary>
+        public int T1 = SIPTimings.T1;
+        public int T2 = SIPTimings.T2;
+        public int T6 = SIPTimings.T6;
+
+
+        /// <summary>
+        /// Disables sending of retransmitted requests and responses.
+        /// <seealso cref="SIPTransport.DisableRetransmitSending"/>
+        /// Added by MiaRec
+        /// </summary>
+        public bool DisableRetransmitSending { get; set; } = false;
+
 
         /// <summary>
         /// If the transport layer does not receive a response to the request in the 

@@ -32,9 +32,6 @@ namespace SIPSorcery.SIP
         private const string TXENGINE_THREAD_NAME = "sip-txengine";
         private const int MAX_TXCHECK_WAIT_MILLISECONDS = 200; // Time to wait between checking for new pending transactions.
         private const int TXCHECK_WAIT_MILLISECONDS = 50;       // Time to wait between checking for actions on existing transactions.
-        private static readonly int m_t1 = SIPTimings.T1;
-        private static readonly int m_t2 = SIPTimings.T2;
-        private static readonly int m_t6 = SIPTimings.T6;
 
         /// <summary>
         /// The maximum number of pending transactions that can be outstanding.
@@ -341,7 +338,7 @@ namespace SIPSorcery.SIP
                                 {
                                     transaction.DeliveryPending = false;
                                 }
-                                else if (transaction.HasDeliveryExpired(m_t6))
+                                else if (transaction.HasDeliveryExpired(transaction.T6))
                                 {
                                     if (transaction.TransactionState == SIPTransactionStatesEnum.Proceeding)
                                     {
@@ -357,7 +354,7 @@ namespace SIPSorcery.SIP
                                 }
                                 else
                                 {
-                                    if (transaction.DeliveryPending && transaction.IsRetransmitDue(m_t1, m_t2))
+                                    if (transaction.DeliveryPending && transaction.IsRetransmitDue(transaction.T1, transaction.T2))
                                     {
                                         SocketError sendResult = SocketError.Success;
 
@@ -601,13 +598,13 @@ namespace SIPSorcery.SIP
             }
 
             // INVITE-UAC and no-INVITE transaction types, send request reliably.
-            if (transaction.Retransmits > 1 && !DisableRetransmitSending)
+            if (transaction.Retransmits > 1 && !(DisableRetransmitSending || transaction.DisableRetransmitSending))
             {
                 SIPRequestRetransmitTraceEvent?.Invoke(transaction, transaction.TransactionRequest, transaction.Retransmits);
                 transaction.RequestRetransmit();
             }
 
-            if (transaction.Retransmits > 1 && DisableRetransmitSending)
+            if (transaction.Retransmits > 1 && (DisableRetransmitSending || transaction.DisableRetransmitSending))
             {
                 return Task.FromResult(SocketError.Success);
             }
@@ -626,7 +623,7 @@ namespace SIPSorcery.SIP
                     // If retransmits are disabled we must wait for DNS when sending. By default the DNS lookup mechanism
                     // will silently do nothing if the lookup result is not in the cache and relies on the result
                     // being ready for a subsequent SIP retransmit. This mechanism won't work if SIP retransmits are disabled.
-                    bool waitForDns = DisableRetransmitSending;
+                    bool waitForDns = DisableRetransmitSending || transaction.DisableRetransmitSending;
 
                     result = m_sipTransport.SendRequestAsync(req, waitForDns);
                 }
@@ -651,7 +648,7 @@ namespace SIPSorcery.SIP
                             // Need to wait until the transaction timeout period is reached in case any ACK re-transmits are received.
                             // No proactive actions need to be undertaken in the Confirmed state. If any ACK requests are received
                             // we use this tx to ensure they get matched and not detected as orphans.
-                            if (now.Subtract(transaction.CompletedAt).TotalMilliseconds >= m_t6)
+                            if (now.Subtract(transaction.CompletedAt).TotalMilliseconds >= transaction.T6)
                             {
                                 expiredTransactionIds.Add(transaction.TransactionId);
                             }
@@ -661,7 +658,7 @@ namespace SIPSorcery.SIP
                             // If a server INVITE transaction is in the following state:
                             // - Completed it means we sent a final response but did not receive an ACK 
                             //   (which is what transitions the tx to the Confirmed state).
-                            if (now.Subtract(transaction.CompletedAt).TotalMilliseconds >= m_t6)
+                            if (now.Subtract(transaction.CompletedAt).TotalMilliseconds >= transaction.T6)
                             {
                                 // It's important that an un-Confirmed server INVITE tx fires the event to
                                 // inform the application that the tx timed out. This allows it to make a decision
@@ -689,7 +686,7 @@ namespace SIPSorcery.SIP
                                 expiredTransactionIds.Add(transaction.TransactionId);
                             }
                         }
-                        else if (now.Subtract(transaction.Created).TotalMilliseconds >= m_t6)
+                        else if (now.Subtract(transaction.Created).TotalMilliseconds >= transaction.T6)
                         {
                             //logger.LogDebug("INVITE transaction (" + transaction.TransactionId + ") " + transaction.TransactionRequestURI.ToString() + " in " + transaction.TransactionState + " has been alive for " + DateTime.Now.Subtract(transaction.Created).TotalSeconds.ToString("0") + ".");
 
@@ -714,7 +711,7 @@ namespace SIPSorcery.SIP
                     {
                         expiredTransactionIds.Add(transaction.TransactionId);
                     }
-                    else if (now.Subtract(transaction.Created).TotalMilliseconds >= m_t6)
+                    else if (now.Subtract(transaction.Created).TotalMilliseconds >= transaction.T6)
                     {
                         if (transaction.TransactionState == SIPTransactionStatesEnum.Calling ||
                            transaction.TransactionState == SIPTransactionStatesEnum.Trying ||
