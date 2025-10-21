@@ -175,3 +175,6 @@ docfx/*
 **/.ionide
 .fake
 .ionide
+
+
+.claude/settings.local.json
