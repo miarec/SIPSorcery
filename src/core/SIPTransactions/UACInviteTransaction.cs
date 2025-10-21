@@ -271,6 +271,13 @@ namespace SIPSorcery.SIP
                 header.Routes = TransactionRequest.Header.Routes;
             }
 
+            // Copy Contact header from original INVITE request (including +sip.src feature tag if present)
+            // (c) miarec
+            if (TransactionRequest.Header.Contact != null && TransactionRequest.Header.Contact.Count > 0)
+            {
+                header.Contact = TransactionRequest.Header.Contact;
+            }
+
             acknowledgeRequest.Header = header;
             acknowledgeRequest.Header.Vias.PushViaHeader(SIPViaHeader.GetDefaultSIPViaHeader());
 
@@ -323,6 +330,13 @@ namespace SIPSorcery.SIP
             header.AuthenticationHeaders = TransactionRequest.Header.AuthenticationHeaders;
             header.Routes = base.TransactionRequest.Header.Routes;
             header.ProxySendFrom = base.TransactionRequest.Header.ProxySendFrom;
+
+            // Copy Contact header from original INVITE request (including +sip.src feature tag if present)
+            // (c) miarec
+            if (TransactionRequest.Header.Contact != null && TransactionRequest.Header.Contact.Count > 0)
+            {
+                header.Contact = TransactionRequest.Header.Contact;
+            }
 
             ackRequest.Header = header;
 
